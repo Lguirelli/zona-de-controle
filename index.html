@@ -9,19 +9,24 @@
 <body>
   <div class="app">
     <div class="container">
+
       <header class="topbar">
-        <div class="office">
-          <div class="office-line">
+        <div class="office officeGrid">
+
+          <div class="officeLeft">
             <div class="seal">REPÚBLICA ADMINISTRATIVA</div>
-            <div class="classif">CONFIDENCIAL</div>
+            <div class="office-title">OFÍCIO DE EMERGÊNCIA</div>
+            <div class="office-sub">
+              Unidade: Zona de Controle · Sistema de Registro Legislativo
+            </div>
           </div>
 
-          <div class="office-line">
-            <div class="office-title">OFÍCIO DE EMERGÊNCIA</div>
-
-            <div class="office-meta">
+          <div class="officeRight">
+            <div class="metaGrid">
               <div id="protocolText" class="meta-item">PROTOCOLO: —</div>
               <div id="dateText" class="meta-item">DATA: —</div>
+
+              <div class="meta-item meta-classif">CONFIDENCIAL</div>
 
               <button id="btnReset" class="meta-btn" type="button" title="Reiniciar sessão">
                 Reiniciar
@@ -29,14 +34,10 @@
             </div>
           </div>
 
-          <div class="office-sub">
-            Unidade: Zona de Controle · Sistema de Registro Legislativo
-          </div>
         </div>
       </header>
 
       <main class="main" id="root"></main>
-
       <footer class="footer"></footer>
     </div>
 
