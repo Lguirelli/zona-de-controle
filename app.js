@@ -227,7 +227,6 @@ function enactPolicy(card, auto=false){
   }
 
   unlockPowerIfAny();
-
   save();
 }
 
@@ -253,7 +252,6 @@ function unlockPowerIfAny(){
 }
 
 function checkRegenteWinConditionAfterGovConfirm(){
-  // Ordem vence se, após 3 Decretos, o Regente for confirmado Supervisor
   if (S.decretos >= 3 && S.supervisorIndex != null){
     const sup = S.players[S.supervisorIndex];
     if (sup && sup.role === Roles.REGENTE){
@@ -284,11 +282,6 @@ function majorityApproved(){
 }
 
 function applyCrisisAutoPolicy(){
-  // Em crise, aplica automaticamente UM DECRETO (controle avança)
-  // Se sair ACORDO por sorte, ainda assim é aplicado (regra base: "um decreto é aplicado automaticamente")
-  // Para forçar decreto, descomente o bloco abaixo e comente o drawOne():
-  // const card = Cards.DECRETO;
-
   const card = drawOne();
   enactPolicy(card, true);
   S.crise = 0;
@@ -341,13 +334,13 @@ function kpiHTML(){
 }
 
 function view(){
-  /* HOME: 3 blocos */
   if (S.phase === Phase.HOME){
     return `
       <section class="card">
-        <div class="h1">ZONA DE CONTROLE</div>
+        <div class="home-title">ZONA DE CONTROLE</div>
 
         <div class="formblock">
+          <div class="label">REGISTRO DE ABERTURA</div>
           <div class="value">
 O Estado entrou em Regime de Emergência.
 As instituições permanecem em funcionamento.
@@ -364,11 +357,13 @@ Nem todos os nomeados compartilham do mesmo objetivo.
 A cada ciclo, o Estado convoca a formação de um Governo Temporário.
 
 O Delegado Central indica um Supervisor de Zona.
+A nomeação não é automática.
+
 O Governo só assume se houver aprovação coletiva.
-Após aproximadamente 60 segundos dedebate é livre, a votação deve ocorrer.
+O debate é livre.
+Após aproximadamente 60 segundos, a votação deve ocorrer.
 
 Aprovado: o Governo assume e o processo legislativo é iniciado.
-
 Vetado: a nomeação é anulada e o controle avança.
 
 Cada veto enfraquece a estabilidade institucional.
@@ -403,6 +398,7 @@ Ou quando a última chance de correção se perde.
         </div>
 
         <button class="btn primary" id="startSession">INICIAR SESSÃO</button>
+        <div class="small home-subtle">Debate ocorre fora do app. O app registra decisões, cartas e tabuleiro.</div>
       </section>
     `;
   }
@@ -541,7 +537,7 @@ Ou quando a última chance de correção se perde.
           <div class="label">REGRA OPERACIONAL</div>
           <div class="value">${S.directNomination
             ? "Nomeação Direta ativa após o 4º Decreto.\nO Supervisor é indicado sem veto."
-            : "Supervisor indicado precisa de aprovação coletiva.\nDebate externo por ~60 segundos e voto no app."
+            : "Supervisor indicado precisa de aprovação coletiva.\nDebate externo e voto no app."
           }</div>
         </div>
 
@@ -967,7 +963,6 @@ function bind(){
 
   if (S.phase === Phase.ROUND_START){
     document.getElementById("pickSup").onclick = () => {
-      // Executa poder pendente na próxima rodada antes de indicar supervisor
       if (S.pendingPower){
         const p = S.pendingPower;
         S.pendingPower = null;
@@ -991,7 +986,6 @@ function bind(){
         save();
 
         if (S.directNomination){
-          // Nomeação Direta: sem debate e sem veto, vai direto para Legislativo
           if (checkRegenteWinConditionAfterGovConfirm()) return;
           startLegislative();
           return;
@@ -1049,7 +1043,6 @@ function bind(){
         S.supervisorPrevIndex = S.supervisorIndex;
         S.supervisorIndex = null;
 
-        // Avança Delegado e rodada
         S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
         S.rodada += 1;
 
@@ -1057,7 +1050,6 @@ function bind(){
           applyCrisisAutoPolicy();
           S.lastOutcomeText = "Crise Administrativa. Um Decreto foi aplicado automaticamente. O contador foi reiniciado.";
 
-          // segue normalmente e contador zera
           S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
           S.rodada += 1;
         }
@@ -1121,7 +1113,6 @@ function bind(){
         const chosen = S.hand2[i];
         const other = S.hand2[1 - i];
 
-        // revela cores após escolha
         const chosenEl = root.querySelector(`[data-final="${i}"]`);
         const otherEl = root.querySelector(`[data-final="${1 - i}"]`);
         if (chosenEl) chosenEl.className = `policyPick ${chosen === Cards.ACORDO ? "ok" : "bad"}`;
@@ -1131,11 +1122,9 @@ function bind(){
 
         enactPolicy(chosen, false);
 
-        // encerra governo
         S.supervisorPrevIndex = S.supervisorIndex;
         S.supervisorIndex = null;
 
-        // avança delegado e rodada
         S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
         S.rodada += 1;
 
