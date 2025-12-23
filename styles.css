@@ -21,7 +21,7 @@ html,body{ height:100%; }
 
 body{
   margin:0;
-  font-family: "Courier New", Courier, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-family:"Courier New", Courier, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   background:
     radial-gradient(1000px 600px at 20% -10%, rgba(96,165,250,0.12), transparent 55%),
     radial-gradient(1000px 700px at 90% 10%, rgba(251,113,133,0.08), transparent 55%),
@@ -33,7 +33,7 @@ body{
   min-height:100%;
   display:flex;
   flex-direction:column;
-  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+  padding:max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
   gap:12px;
 }
 
@@ -145,8 +145,12 @@ body{
   font-size:12px;
   color:var(--muted);
 }
+
 .dot{
-  width:9px; height:9px; border-radius:999px; background:var(--accent);
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  background:var(--accent);
 }
 .dot.ok{ background:var(--ok); }
 .dot.bad{ background:var(--bad); }
@@ -156,7 +160,11 @@ body{
   gap:10px;
   flex-wrap:wrap;
 }
-.kpi .badge{ flex:1; min-width:140px; justify-content:center; }
+.kpi .badge{
+  flex:1;
+  min-width:140px;
+  justify-content:center;
+}
 
 /* Bloco formulário */
 .formblock{
@@ -183,7 +191,7 @@ body{
   white-space:pre-wrap;
 }
 
-/* HOME: reforço de hierarquia */
+/* HOME */
 .home-title{
   font-size:20px;
   font-weight:900;
@@ -202,11 +210,7 @@ body{
   color:rgba(251,113,133,0.92);
 }
 
-/* -----------------------------
-   CABEÇALHO (layout definitivo)
-   - Reiniciar no topo direito
-   - Protocolo/Data/Confidencial na mesma linha
------------------------------- */
+/* CABEÇALHO */
 .office{
   width:100%;
   background:rgba(255,255,255,0.02);
@@ -218,7 +222,7 @@ body{
 
 .officeGrid{
   display:grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns:1fr auto;
   grid-template-areas:
     "left reset"
     "meta meta";
@@ -227,7 +231,12 @@ body{
 }
 
 .officeLeft{ grid-area:left; min-width:0; }
-.officeRightTop{ grid-area:reset; display:flex; justify-content:flex-end; align-items:flex-start; }
+.officeRightTop{
+  grid-area:reset;
+  display:flex;
+  justify-content:flex-end;
+  align-items:flex-start;
+}
 
 .seal{
   font-weight:900;
@@ -250,15 +259,14 @@ body{
   line-height:1.35;
 }
 
-/* Linha única de meta-items */
+/* Meta */
 .officeMeta{
   grid-area:meta;
   display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns:1fr 1fr 1fr;
   gap:10px;
 }
 
-/* Boxes (mantidos como estão) */
 .meta-item{
   font-size:12px;
   color:var(--muted);
@@ -271,17 +279,17 @@ body{
   text-overflow:ellipsis;
 }
 
-/* Confidencial */
+/* CONFIDENCIAL — ALTERNATIVA MAIS SECA */
 .meta-classif{
   font-weight:900;
   letter-spacing:0.14em;
-  color:rgba(251,113,133,0.95);
-  border-color:rgba(251,113,133,0.35);
-  background:rgba(251,113,133,0.08);
+  color:var(--muted);
+  border:none;
+  background:transparent;
   text-align:center;
 }
 
-/* Reiniciar como meta-item de perigo, no topo direito */
+/* Reiniciar */
 .meta-btn{
   font-size:12px;
   padding:8px 12px;
@@ -309,14 +317,8 @@ body{
   transform:translateY(1px);
 }
 
-/* Responsivo: meta quebra em 1 coluna, reset continua no topo */
-@media (max-width: 560px){
-  .officeGrid{
-    grid-template-columns: 1fr auto;
-  }
-  .officeMeta{
-    grid-template-columns: 1fr;
-  }
+@media (max-width:560px){
+  .officeMeta{ grid-template-columns:1fr; }
 }
 
 /* Tabuleiro */
@@ -325,7 +327,6 @@ body{
   gap:8px;
   flex-wrap:wrap;
   align-items:center;
-  justify-content:flex-start;
 }
 
 .pip{
@@ -378,4 +379,6 @@ body{
   color:rgba(230,237,246,0.95);
 }
 
-.policyPick:active{ transform:translateY(1px); }
+.policyPick:active{
+  transform:translateY(1px);
+}
