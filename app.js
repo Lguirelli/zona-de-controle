@@ -398,7 +398,6 @@ Ou quando a última chance de correção se perde.
         </div>
 
         <button class="btn primary" id="startSession">INICIAR SESSÃO</button>
-        <div class="small home-subtle">Debate ocorre fora do app. O app registra decisões, cartas e tabuleiro.</div>
       </section>
     `;
   }
