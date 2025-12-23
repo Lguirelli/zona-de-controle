@@ -3,9 +3,7 @@
    Estado em localStorage.
 */
 
-const $ = (sel) => document.querySelector(sel);
-
-const STORAGE_KEY = "zona_controle_mvp_v2";
+const STORAGE_KEY = "zona_controle_mvp_v3";
 
 const Roles = {
   COALIZAO: "COALIZAO",
@@ -18,6 +16,11 @@ const Cards = {
   DECRETO: "DECRETO",
 };
 
+const PendingPower = {
+  AUDIT: "AUDIT",
+  KILL: "KILL",
+};
+
 const Phase = {
   HOME: "HOME",
   PLAYERS: "PLAYERS",
@@ -25,18 +28,24 @@ const Phase = {
   DEAL_INTRO: "DEAL_INTRO",
   PASS_TO: "PASS_TO",
   SHOW_ROLE: "SHOW_ROLE",
+
   BOARD: "BOARD",
+
   ROUND_START: "ROUND_START",
   PICK_SUPERVISOR: "PICK_SUPERVISOR",
   DEBATE: "DEBATE",
   VOTE_PASS_TO: "VOTE_PASS_TO",
   VOTE: "VOTE",
   VOTE_RESULT: "VOTE_RESULT",
+
   LEGISLATE_SUP: "LEGISLATE_SUP",
   LEGISLATE_DEL: "LEGISLATE_DEL",
   POLICY_REVEAL: "POLICY_REVEAL",
+
+  POWER_INFO: "POWER_INFO",
   POWER_AUDIT: "POWER_AUDIT",
   POWER_KILL: "POWER_KILL",
+
   GAME_OVER: "GAME_OVER",
 };
 
@@ -94,8 +103,11 @@ function freshState(){
 
     directNominationActive: false,
 
+    pendingPower: null, // "AUDIT" | "KILL" | null
+
     log: [],
     winner: null,
+    lastPolicy: null,
   };
 }
 
@@ -128,9 +140,10 @@ document.getElementById("btnReset").addEventListener("click", () => {
 });
 
 function roleCounts(n){
+  // mínimo do projeto: 5
   if (n === 5) return { coalizao: 3, ordem: 1, regente: 1 };
   if (n === 6) return { coalizao: 4, ordem: 1, regente: 1 };
-  return { coalizao: 4, ordem: 2, regente: 1 };
+  return { coalizao: 4, ordem: 2, regente: 1 }; // 7
 }
 
 function buildDeck(){
@@ -254,7 +267,7 @@ Proteja o Regente.</div>
       </div>
       <div class="formblock">
         <div class="label">ALIADOS IDENTIFICADOS</div>
-        <div class="value">${allies.map(a => `• ${escapeHtml(a)}`).join("\n")}</div>
+        <div class="value">${allies.length ? allies.map(a => `• ${escapeHtml(a)}`).join("\n") : "• (nenhum registro adicional)"} </div>
       </div>
     `;
   }
@@ -289,6 +302,40 @@ function render(){
   }
 }
 
+function powerInfoCopy(){
+  if (S.pendingPower === PendingPower.AUDIT){
+    return {
+      title: "FUNÇÃO DESBLOQUEADA",
+      subtitle: "AUDITORIA ADMINISTRATIVA AUTORIZADA",
+      body:
+`Com a promulgação deste Decreto, novas prerrogativas são concedidas ao Governo.
+
+O Delegado Central deve verificar a lealdade de um participante.
+O resultado é exibido apenas ao Delegado.
+
+Regente é classificado como ORDEM em auditorias.`,
+      cta: "PROSSEGUIR",
+      next: Phase.POWER_AUDIT,
+    };
+  }
+  if (S.pendingPower === PendingPower.KILL){
+    return {
+      title: "FUNÇÃO DESBLOQUEADA",
+      subtitle: "INTERVENÇÃO DIRETA AUTORIZADA",
+      body:
+`Com a promulgação deste Decreto, o Delegado Central recebe autorização de neutralização.
+
+O Delegado deve eliminar um participante vivo.
+A lealdade do eliminado não será revelada ao grupo.
+
+Se o Regente for neutralizado, a Coalizão vence imediatamente.`,
+      cta: "PROSSEGUIR",
+      next: Phase.POWER_KILL,
+    };
+  }
+  return null;
+}
+
 function view(){
   switch(S.phase){
 
@@ -296,13 +343,30 @@ function view(){
       return `
         <section class="card">
           <div class="h1">ZONA DE CONTROLE</div>
+
           <div class="formblock">
-            <div class="label">AVISO</div>
-            <div class="value">Um único dispositivo.
-Uma única autoridade.
-Registro obrigatório.</div>
+            <div class="label">REGISTRO DE ABERTURA</div>
+            <div class="value">O Estado entrou em Regime de Emergência.
+As instituições permanecem em funcionamento.
+A confiança, não.
+
+Uma cadeia administrativa foi instaurada para garantir continuidade.
+Nem todos os nomeados compartilham do mesmo objetivo.</div>
           </div>
-          <button class="btn primary" id="goCreate">CRIAR SESSÃO</button>
+
+          <div class="formblock">
+            <div class="label">PROCEDIMENTO DE GOVERNO</div>
+            <div class="value">A cada ciclo, o Delegado indica um Supervisor.
+A nomeação só entra em vigor se passar por votação.
+
+Debate externo autorizado por até 60 segundos.
+Após o tempo, registre APROVAR ou REJEITAR.
+
+Cada veto acumula crise.
+Ao atingir 3 vetos, um projeto é aplicado automaticamente e o contador zera.</div>
+          </div>
+
+          <button class="btn primary" id="goCreate">INICIAR SESSÃO</button>
         </section>
       `;
 
@@ -380,7 +444,9 @@ Passe o aparelho ao próximo.</div>
     case Phase.SHOW_ROLE: {
       const p = getPlayerByIndex(S.currentIndex);
       const allies = p.papel === Roles.ORDEM
-        ? S.players.filter(x => x.papel === Roles.ORDEM || x.papel === Roles.REGENTE).map(x=>x.nome)
+        ? S.players
+            .filter(x => (x.papel === Roles.ORDEM || x.papel === Roles.REGENTE) && x.id !== p.id)
+            .map(x => x.nome)
         : [];
       return `
         <section class="card">
@@ -389,8 +455,82 @@ Passe o aparelho ao próximo.</div>
           <hr class="hr" />
           ${roleBlock(p.papel, allies)}
           <div class="row">
-            <button class="btn primary" id="roleOk">OK</button>
-            <button class="btn" id="passNext">PASSAR</button>
+            <button class="btn primary" id="passNext">OK E PASSAR</button>
+          </div>
+        </section>
+      `;
+    }
+
+    case Phase.BOARD: {
+      const del = getPlayerByIndex(S.delegadoIndex);
+      const alive = alivePlayers();
+      const eliminated = S.players.filter(p=>!p.vivo);
+      const direct = (S.decretos >= 4);
+
+      const trackBar = (label, cur, max, kind) => {
+        const filled = Math.min(max, Math.max(0, cur));
+        const blocks = Array.from({length:max}).map((_,i)=>{
+          const on = i < filled;
+          const cls = on ? (kind==="ok" ? "ok" : "bad") : "";
+          const txt = on ? "■" : "□";
+          return `<span class="track ${cls}">${txt}</span>`;
+        }).join("");
+        return `
+          <div class="formblock">
+            <div class="label">${label}</div>
+            <div class="value"><span class="trackline">${blocks}</span></div>
+          </div>
+        `;
+      };
+
+      return `
+        <section class="card">
+          <div class="h1">Tabuleiro</div>
+          ${kpiHTML()}
+
+          <div class="formgrid">
+            <div class="formblock">
+              <div class="label">DELEGADO CENTRAL</div>
+              <div class="value">${escapeHtml(del.nome)}</div>
+            </div>
+            <div class="formblock">
+              <div class="label">REGIME</div>
+              <div class="value">${direct ? "NOMEAÇÃO DIRETA ATIVA (SEM VETO)" : "PROCEDIMENTO PADRÃO"}</div>
+            </div>
+          </div>
+
+          ${trackBar("ACORDOS CIVIS", S.acordos, 5, "ok")}
+          ${trackBar("DECRETOS DE DOMÍNIO", S.decretos, 6, "bad")}
+
+          <div class="formblock">
+            <div class="label">CRISE</div>
+            <div class="value">A cada governo vetado, a crise avança.
+Ao atingir 3, o sistema aplica um projeto automático e reinicia o contador.</div>
+          </div>
+          <div class="badge" style="justify-content:center;font-size:16px;">
+            <span class="dot"></span> MARCADOR DE CRISE: <b>${S.crise}/3</b>
+          </div>
+
+          <hr class="hr" />
+
+          <div class="formblock">
+            <div class="label">PARTICIPANTES (VIVOS)</div>
+            <div class="value">${alive.map(p=>`• ${escapeHtml(p.nome)}`).join("\n") || "—"}</div>
+          </div>
+
+          <div class="formblock">
+            <div class="label">ELIMINADOS</div>
+            <div class="value">${eliminated.map(p=>`• ${escapeHtml(p.nome)}`).join("\n") || "—"}</div>
+          </div>
+
+          <div class="formblock">
+            <div class="label">REGISTRO DE OCORRÊNCIAS</div>
+            <div class="value">${(S.log || []).slice(-12).map(x=>`• ${escapeHtml(x)}`).join("\n") || "—"}</div>
+          </div>
+
+          <div class="row">
+            <button class="btn" id="backToRound">VOLTAR</button>
+            <button class="btn primary" id="goPickFromBoard">CONTINUAR</button>
           </div>
         </section>
       `;
@@ -603,6 +743,22 @@ A natureza do ato é agora pública.</div>
         </section>
       `;
 
+    case Phase.POWER_INFO: {
+      const info = powerInfoCopy();
+      if (!info) return `<section class="card"><div class="h1">Registro</div><div class="p">Nenhuma função ativa.</div></section>`;
+      return `
+        <section class="card">
+          <div class="h1">${escapeHtml(info.title)}</div>
+          ${kpiHTML()}
+          <div class="formblock">
+            <div class="label">${escapeHtml(info.subtitle)}</div>
+            <div class="value">${escapeHtml(info.body)}</div>
+          </div>
+          <button class="btn primary" id="powerInfoGo">${escapeHtml(info.cta)}</button>
+        </section>
+      `;
+    }
+
     case Phase.POWER_AUDIT: {
       const del = getPlayerByIndex(S.delegadoIndex);
       return `
@@ -669,82 +825,6 @@ A identidade não é exibida ao grupo.</div>
         </section>
       `;
 
-
-    case Phase.BOARD: {
-      const del = getPlayerByIndex(S.delegadoIndex);
-      const sup = (S.supervisorIndex !== null) ? getPlayerByIndex(S.supervisorIndex) : null;
-      const alive = alivePlayers();
-      const eliminated = S.players.filter(p=>!p.vivo);
-      const direct = (S.decretos >= 4);
-
-      const trackBar = (label, cur, max, kind) => {
-        const filled = Math.min(max, Math.max(0, cur));
-        const blocks = Array.from({length:max}).map((_,i)=>{
-          const on = i < filled;
-          const cls = on ? (kind==="ok" ? "ok" : "bad") : "";
-          const txt = on ? "■" : "□";
-          return `<span class="track ${cls}">${txt}</span>`;
-        }).join("");
-        return `
-          <div class="formblock">
-            <div class="label">${label}</div>
-            <div class="value"><span class="trackline">${blocks}</span></div>
-          </div>
-        `;
-      };
-
-      return `
-        <section class="card">
-          <div class="h1">Tabuleiro</div>
-          ${kpiHTML()}
-
-          <div class="formgrid">
-            <div class="formblock">
-              <div class="label">DELEGADO CENTRAL</div>
-              <div class="value">${escapeHtml(del.nome)}</div>
-            </div>
-            <div class="formblock">
-              <div class="label">REGIME</div>
-              <div class="value">${direct ? "NOMEAÇÃO DIRETA ATIVA (SEM VETO)" : "PROCEDIMENTO PADRÃO"}</div>
-            </div>
-          </div>
-
-          ${trackBar("ACORDOS CIVIS", S.acordos, 5, "ok")}
-          ${trackBar("DECRETOS DE DOMÍNIO", S.decretos, 6, "bad")}
-
-          <div class="formblock">
-            <div class="label">CRISE</div>
-            <div class="value">Governo rejeitado acumula crise. Ao atingir 3, vira projeto automático e zera.</div>
-          </div>
-          <div class="badge" style="justify-content:center;font-size:16px;">
-            <span class="dot"></span> MARCADOR DE CRISE: <b>${S.crise}/3</b>
-          </div>
-
-          <hr class="hr" />
-
-          <div class="formblock">
-            <div class="label">PARTICIPANTES (VIVOS)</div>
-            <div class="value">${alive.map(p=>`• ${escapeHtml(p.nome)}`).join("\\n") || "—"}</div>
-          </div>
-
-          <div class="formblock">
-            <div class="label">ELIMINADOS</div>
-            <div class="value">${eliminated.map(p=>`• ${escapeHtml(p.nome)}`).join("\\n") || "—"}</div>
-          </div>
-
-          <div class="formblock">
-            <div class="label">REGISTRO DE OCORRÊNCIAS</div>
-            <div class="value">${(S.log || []).slice(-12).map(x=>`• ${escapeHtml(x)}`).join("\\n") || "—"}</div>
-          </div>
-
-          <div class="row">
-            <button class="btn" id="backToRound">VOLTAR</button>
-            <button class="btn primary" id="goPickFromBoard">CONTINUAR</button>
-          </div>
-        </section>
-      `;
-    }
-
     default:
       return `<section class="card"><div class="h1">Tela não mapeada</div></section>`;
   }
@@ -808,6 +888,8 @@ function bind(){
         S.log = [];
         S.winner = null;
         S.directNominationActive = false;
+        S.pendingPower = null;
+        S.lastPolicy = null;
 
         const counts = roleCounts(S.players.length);
         const pool = [
@@ -838,7 +920,6 @@ function bind(){
       break;
 
     case Phase.SHOW_ROLE:
-      document.getElementById("roleOk").onclick = () => {};
       document.getElementById("passNext").onclick = () => {
         if (S.currentIndex < S.players.length - 1){
           S.currentIndex += 1;
@@ -852,14 +933,14 @@ function bind(){
       };
       break;
 
-    case Phase.ROUND_START:
-      document.getElementById("goBoard").onclick = () => setPhase(Phase.BOARD);
-      document.getElementById("goPickSupervisor").onclick = () => setPhase(Phase.PICK_SUPERVISOR);
-      break;
-
     case Phase.BOARD:
       document.getElementById("backToRound").onclick = () => setPhase(Phase.ROUND_START);
       document.getElementById("goPickFromBoard").onclick = () => setPhase(Phase.PICK_SUPERVISOR);
+      break;
+
+    case Phase.ROUND_START:
+      document.getElementById("goBoard").onclick = () => setPhase(Phase.BOARD);
+      document.getElementById("goPickSupervisor").onclick = () => setPhase(Phase.PICK_SUPERVISOR);
       break;
 
     case Phase.PICK_SUPERVISOR:
@@ -870,6 +951,7 @@ function bind(){
           save(S);
 
           if (S.decretos >= 4){
+            // Nomeação direta: sem voto/debate
             S.hand3 = drawN(3);
             S.legSupSelected = [];
             save(S);
@@ -913,6 +995,18 @@ function bind(){
       document.getElementById("afterPolicy").onclick = () => afterPolicy();
       break;
 
+    case Phase.POWER_INFO: {
+      const info = powerInfoCopy();
+      document.getElementById("powerInfoGo").onclick = () => {
+        if (!info) {
+          proceedToNextRound();
+          return;
+        }
+        setPhase(info.next);
+      };
+      break;
+    }
+
     case Phase.POWER_AUDIT:
       document.querySelectorAll("[data-audit]").forEach(btn=>{
         btn.onclick = () => {
@@ -924,6 +1018,8 @@ function bind(){
           if (target.papel === Roles.REGENTE) result = "ORDEM";
 
           alert(`LEALDADE DETECTADA: ${result}\n\n(Informação privada do Delegado)`);
+          S.pendingPower = null;
+          save(S);
           proceedToNextRound();
         };
       });
@@ -937,6 +1033,8 @@ function bind(){
           target.vivo = false;
           S.log.push(`Neutralização: ${target.nome}`);
 
+          S.pendingPower = null;
+
           if (target.papel === Roles.REGENTE){
             S.winner = "COALIZAO";
             save(S);
@@ -944,6 +1042,7 @@ function bind(){
             return;
           }
 
+          save(S);
           proceedToNextRound();
         };
       });
@@ -1016,8 +1115,10 @@ function afterVote(){
     return;
   }
 
+  // Veto do governo: acumula crise
   S.crise += 1;
 
+  // após 3 vetos (não precisa ser consecutivo): vira carta automática e zera
   if (S.crise >= 3){
     const auto = draw();
     applyPolicy(auto, { auto:true });
@@ -1111,7 +1212,30 @@ function applyPolicy(card, { auto }){
   }
 }
 
+function computePendingPower(){
+  // Regra de poderes definida por você:
+  // <7 jogadores:
+  //   2º Decreto: nada
+  //   3º Decreto: Auditoria
+  // 7 jogadores:
+  //   2º Decreto: Auditoria
+  //   3º Decreto: Eliminação
+  // Geral: 5º Decreto: Eliminação
+  const n = S.players.length;
+  const d = S.decretos;
+
+  if (n < 7 && d === 3) return PendingPower.AUDIT;
+
+  if (n === 7 && d === 2) return PendingPower.AUDIT;
+  if (n === 7 && d === 3) return PendingPower.KILL;
+
+  if (d === 5) return PendingPower.KILL;
+
+  return null;
+}
+
 function afterPolicy(){
+  // Nomeação direta ativa a partir do 4º Decreto
   if (S.decretos >= 4) S.directNominationActive = true;
 
   if (checkWin()){
@@ -1120,30 +1244,13 @@ function afterPolicy(){
     return;
   }
 
+  // Se foi Decreto, checar poder desbloqueado
   if (S.lastPolicy === Cards.DECRETO){
-    const n = S.players.length;
-    const d = S.decretos;
+    S.pendingPower = computePendingPower();
+    save(S);
 
-    if (n < 7 && d === 3){
-      save(S);
-      setPhase(Phase.POWER_AUDIT);
-      return;
-    }
-
-    if (n === 7 && d === 2){
-      save(S);
-      setPhase(Phase.POWER_AUDIT);
-      return;
-    }
-    if (n === 7 && d === 3){
-      save(S);
-      setPhase(Phase.POWER_KILL);
-      return;
-    }
-
-    if (d === 5){
-      save(S);
-      setPhase(Phase.POWER_KILL);
+    if (S.pendingPower){
+      setPhase(Phase.POWER_INFO);
       return;
     }
   }
