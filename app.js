@@ -348,7 +348,6 @@ function view(){
         <div class="h1">ZONA DE CONTROLE</div>
 
         <div class="formblock">
-          <div class="label">ZONA DE CONTROLE</div>
           <div class="value">
 O Estado entrou em Regime de Emergência.
 As instituições permanecem em funcionamento.
@@ -365,13 +364,8 @@ Nem todos os nomeados compartilham do mesmo objetivo.
 A cada ciclo, o Estado convoca a formação de um Governo Temporário.
 
 O Delegado Central indica um Supervisor de Zona.
-A nomeação não é automática.
-
 O Governo só assume se houver aprovação coletiva.
-O debate é livre.
-A decisão é registrada.
-
-⏱️ Após aproximadamente 60 segundos, a votação deve ocorrer.
+Após aproximadamente 60 segundos dedebate é livre, a votação deve ocorrer.
 
 Aprovado: o Governo assume e o processo legislativo é iniciado.
 
