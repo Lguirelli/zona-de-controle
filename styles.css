@@ -187,7 +187,9 @@ body{
   white-space:pre-wrap;
 }
 
-/* Cabeçalho */
+/* -----------------------------
+   CABEÇALHO (novo layout)
+------------------------------ */
 .office{
   width:100%;
   background:rgba(255,255,255,0.02);
@@ -197,12 +199,16 @@ body{
   padding:14px 14px 12px;
 }
 
-.office-line{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  flex-wrap:wrap;
+/* 2 colunas: esquerda conteúdo, direita meta */
+.officeGrid{
+  display:grid;
+  grid-template-columns: 1fr auto;
+  gap:12px 14px;
+  align-items:start;
+}
+
+.officeLeft{
+  min-width:0;
 }
 
 .seal{
@@ -212,29 +218,45 @@ body{
   color:rgba(230,237,246,0.85);
 }
 
-.classif{
-  font-weight:900;
-  letter-spacing:0.12em;
-  font-size:12px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(251,113,133,0.35);
-  background:rgba(251,113,133,0.08);
-  color:rgba(251,113,133,0.95);
-}
-
 .office-title{
+  margin-top:8px;
   font-weight:900;
   letter-spacing:0.12em;
   font-size:13px;
 }
 
-.office-meta{
+.office-sub{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+}
+
+/* Meta: grade responsiva e alinhada */
+.officeRight{
   display:flex;
-  gap:10px;
-  flex-wrap:wrap;
   justify-content:flex-end;
-  align-items:center;
+}
+
+.metaGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  min-width: 280px;
+}
+
+/* Em telas menores vira 1 coluna sem conflito */
+@media (max-width: 520px){
+  .officeGrid{
+    grid-template-columns: 1fr;
+  }
+  .officeRight{
+    justify-content:flex-start;
+  }
+  .metaGrid{
+    min-width:0;
+    grid-template-columns: 1fr;
+  }
 }
 
 .meta-item{
@@ -244,9 +266,22 @@ body{
   padding:6px 10px;
   border-radius:12px;
   background:rgba(255,255,255,0.02);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-/* Reiniciar como meta-item com assinatura de perigo */
+/* Confidencial como chip fixo, não flutua */
+.meta-classif{
+  font-weight:900;
+  letter-spacing:0.12em;
+  color:rgba(251,113,133,0.95);
+  border-color:rgba(251,113,133,0.35);
+  background:rgba(251,113,133,0.08);
+  text-align:center;
+}
+
+/* Reiniciar: mesmo “meta-item”, porém perigo */
 .meta-btn{
   font-size:12px;
   color:rgba(251,113,133,0.95);
@@ -266,13 +301,6 @@ body{
 .meta-btn:active{
   transform:translateY(1px);
   background:rgba(251,113,133,0.16);
-}
-
-.office-sub{
-  margin-top:8px;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.35;
 }
 
 /* Tabuleiro */
