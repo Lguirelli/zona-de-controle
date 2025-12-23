@@ -2,7 +2,7 @@
   --bg:#0B0F14;
   --panel:#111826;
   --text:#E6EDF6;
-  --muted:rgba(230,237,246,0.65);
+  --muted:rgba(230,237,246,0.66);
   --border:rgba(255,255,255,0.08);
 
   --ok:#36D399;
@@ -18,6 +18,7 @@
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+
 body{
   margin:0;
   font-family: "Courier New", Courier, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -58,42 +59,39 @@ body{
   align-items:stretch;
 }
 
-.footer{
-  display:none;
-}
-
+/* Card padrão */
 .card{
   width:100%;
   background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border:1px solid var(--border);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-  padding:16px;
+  padding:18px;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
 }
 
 .h1{
   font-size:18px;
   font-weight:900;
-  letter-spacing:0.06em;
+  letter-spacing:0.08em;
 }
 
 .p{
   color:var(--muted);
-  line-height:1.5;
+  line-height:1.6;
   font-size:13px;
   white-space:pre-wrap;
 }
 
-.hr{
-  height:1px;
-  background:var(--border);
-  border:none;
-  margin:8px 0;
+.small{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.55;
 }
 
+/* Botões */
 .btn{
   height:var(--tap);
   padding:0 14px;
@@ -102,7 +100,7 @@ body{
   background:rgba(255,255,255,0.04);
   color:var(--text);
   font-weight:900;
-  letter-spacing:0.06em;
+  letter-spacing:0.08em;
   cursor:pointer;
   user-select:none;
 }
@@ -117,6 +115,7 @@ body{
   border-color:rgba(251,113,133,0.35);
 }
 
+/* Inputs */
 .input{
   height:var(--tap);
   width:100%;
@@ -130,9 +129,11 @@ body{
 }
 .input::placeholder{ color:rgba(230,237,246,0.35); }
 
+/* Layout */
 .row{ display:flex; gap:12px; flex-wrap:wrap; }
 .row > *{ flex:1; min-width:180px; }
 
+/* Badges e KPIs */
 .badge{
   display:inline-flex;
   align-items:center;
@@ -157,38 +158,54 @@ body{
 }
 .kpi .badge{ flex:1; min-width:140px; justify-content:center; }
 
-.timer{
-  font-variant-numeric:tabular-nums;
-  font-weight:900;
-  letter-spacing:0.12em;
-}
-
+/* Bloco formulário */
 .formblock{
   border:1px dashed rgba(255,255,255,0.16);
   background:rgba(255,255,255,0.02);
   border-radius:14px;
-  padding:12px;
+  padding:14px;
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:10px;
 }
 
 .formblock .label{
   font-size:12px;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
   font-weight:900;
-  color:rgba(230,237,246,0.75);
+  color:rgba(230,237,246,0.78);
 }
 
 .formblock .value{
-  font-size:13px;
-  line-height:1.55;
-  color:rgba(230,237,246,0.92);
+  font-size:14px;
+  line-height:1.75;
+  color:rgba(230,237,246,0.94);
   white-space:pre-wrap;
 }
 
+/* HOME: reforço de hierarquia */
+.home-title{
+  font-size:20px;
+  font-weight:900;
+  letter-spacing:0.10em;
+}
+
+.home-subtle{
+  color:rgba(230,237,246,0.68);
+}
+
+.home-accent{
+  color:rgba(96,165,250,0.92);
+}
+
+.home-warn{
+  color:rgba(251,113,133,0.92);
+}
+
 /* -----------------------------
-   CABEÇALHO (novo layout)
+   CABEÇALHO (layout definitivo)
+   - Reiniciar no topo direito
+   - Protocolo/Data/Confidencial na mesma linha
 ------------------------------ */
 .office{
   width:100%;
@@ -199,29 +216,30 @@ body{
   padding:14px 14px 12px;
 }
 
-/* 2 colunas: esquerda conteúdo, direita meta */
 .officeGrid{
   display:grid;
   grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "left reset"
+    "meta meta";
   gap:12px 14px;
   align-items:start;
 }
 
-.officeLeft{
-  min-width:0;
-}
+.officeLeft{ grid-area:left; min-width:0; }
+.officeRightTop{ grid-area:reset; display:flex; justify-content:flex-end; align-items:flex-start; }
 
 .seal{
   font-weight:900;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
   font-size:12px;
-  color:rgba(230,237,246,0.85);
+  color:rgba(230,237,246,0.88);
 }
 
 .office-title{
   margin-top:8px;
   font-weight:900;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
   font-size:13px;
 }
 
@@ -232,38 +250,20 @@ body{
   line-height:1.35;
 }
 
-/* Meta: grade responsiva e alinhada */
-.officeRight{
-  display:flex;
-  justify-content:flex-end;
-}
-
-.metaGrid{
+/* Linha única de meta-items */
+.officeMeta{
+  grid-area:meta;
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap:10px;
-  min-width: 280px;
 }
 
-/* Em telas menores vira 1 coluna sem conflito */
-@media (max-width: 520px){
-  .officeGrid{
-    grid-template-columns: 1fr;
-  }
-  .officeRight{
-    justify-content:flex-start;
-  }
-  .metaGrid{
-    min-width:0;
-    grid-template-columns: 1fr;
-  }
-}
-
+/* Boxes (mantidos como estão) */
 .meta-item{
   font-size:12px;
   color:var(--muted);
   border:1px dashed rgba(255,255,255,0.14);
-  padding:6px 10px;
+  padding:8px 10px;
   border-radius:12px;
   background:rgba(255,255,255,0.02);
   white-space:nowrap;
@@ -271,36 +271,52 @@ body{
   text-overflow:ellipsis;
 }
 
-/* Confidencial como chip fixo, não flutua */
+/* Confidencial */
 .meta-classif{
   font-weight:900;
-  letter-spacing:0.12em;
+  letter-spacing:0.14em;
   color:rgba(251,113,133,0.95);
   border-color:rgba(251,113,133,0.35);
   background:rgba(251,113,133,0.08);
   text-align:center;
 }
 
-/* Reiniciar: mesmo “meta-item”, porém perigo */
+/* Reiniciar como meta-item de perigo, no topo direito */
 .meta-btn{
   font-size:12px;
-  color:rgba(251,113,133,0.95);
-  border:1px dashed rgba(251,113,133,0.42);
-  padding:6px 10px;
+  padding:8px 12px;
   border-radius:12px;
-  background:rgba(251,113,133,0.08);
+  border:1px dashed rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.02);
   cursor:pointer;
   font-weight:900;
-  letter-spacing:0.06em;
+  letter-spacing:0.08em;
   line-height:1;
 }
-.meta-btn:hover{
+
+.meta-btn-danger{
+  color:rgba(251,113,133,0.95);
+  border-color:rgba(251,113,133,0.42);
+  background:rgba(251,113,133,0.08);
+}
+
+.meta-btn-danger:hover{
   background:rgba(251,113,133,0.12);
   border-color:rgba(251,113,133,0.52);
 }
+
 .meta-btn:active{
   transform:translateY(1px);
-  background:rgba(251,113,133,0.16);
+}
+
+/* Responsivo: meta quebra em 1 coluna, reset continua no topo */
+@media (max-width: 560px){
+  .officeGrid{
+    grid-template-columns: 1fr auto;
+  }
+  .officeMeta{
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Tabuleiro */
@@ -311,6 +327,7 @@ body{
   align-items:center;
   justify-content:flex-start;
 }
+
 .pip{
   width:18px;
   height:18px;
@@ -318,10 +335,12 @@ body{
   border:1px solid rgba(255,255,255,0.18);
   background:rgba(255,255,255,0.03);
 }
+
 .pip.ok{
   border-color:rgba(54,211,153,0.45);
   background:rgba(54,211,153,0.18);
 }
+
 .pip.bad{
   border-color:rgba(251,113,133,0.45);
   background:rgba(251,113,133,0.18);
@@ -341,24 +360,22 @@ body{
   user-select:none;
   color:rgba(230,237,246,0.8);
 }
+
 .policyPick.gray{
   background:rgba(255,255,255,0.02);
   color:rgba(230,237,246,0.45);
 }
+
 .policyPick.ok{
   border-color:rgba(54,211,153,0.35);
   background:rgba(54,211,153,0.12);
   color:rgba(230,237,246,0.95);
 }
+
 .policyPick.bad{
   border-color:rgba(251,113,133,0.35);
   background:rgba(251,113,133,0.12);
   color:rgba(230,237,246,0.95);
 }
-.policyPick:active{ transform:translateY(1px); }
 
-.small{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.45;
-}
+.policyPick:active{ transform:translateY(1px); }
