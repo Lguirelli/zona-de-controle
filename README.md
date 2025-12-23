@@ -7,6 +7,7 @@ Modo: celular único, offline (sem backend).
 - index.html
 - styles.css
 - app.js
+- README.md
 
 ## Rodar local
 Abra o index.html no navegador.
@@ -14,9 +15,10 @@ Abra o index.html no navegador.
 ## Publicar no GitHub Pages
 1. Suba estes arquivos para a raiz do repositório
 2. GitHub → Settings → Pages
-3. Source: Deploy from branch
+3. Source: Deploy from a branch
 4. Branch: main e folder /root
 
 ## Observações
 - O app salva o estado em localStorage
 - Botão Reiniciar apaga a sessão e gera um novo protocolo
+- Poderes agora têm uma tela explicativa (POWER_INFO) antes da ação
