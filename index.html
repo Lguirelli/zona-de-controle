@@ -7,38 +7,32 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <div class="bg"></div>
+
   <div class="app">
-    <div class="container">
-
-      <header class="topbar">
-        <div class="office officeGrid">
-
-          <div class="officeLeft">
-            <div class="seal">REPÚBLICA ADMINISTRATIVA</div>
-            <div class="office-title">OFÍCIO DE EMERGÊNCIA</div>
-            <div class="office-sub">Unidade: Zona de Controle · Sistema de Registro Legislativo</div>
-          </div>
-
-          <div class="officeRightTop">
-            <button id="btnReset" class="meta-btn meta-btn-danger" type="button" title="Reiniciar sessão">
-              Reiniciar
-            </button>
-          </div>
-
-          <div class="officeMeta">
-            <div id="protocolText" class="meta-item">PROTOCOLO: —</div>
-            <div id="dateText" class="meta-item">DATA: —</div>
-            <div class="meta-item meta-classif">CONFIDENCIAL</div>
-          </div>
-
+    <header class="header card">
+      <div class="headerTop">
+        <div class="headerTitles">
+          <div class="headerLine headerMain">REPÚBLICA ADMINISTRATIVA</div>
+          <div class="headerLine headerSub">OFÍCIO DE EMERGÊNCIA</div>
+          <div class="headerLine headerUnit">Unidade: Zona de Controle · Sistema de Registro Legislativo</div>
         </div>
-      </header>
 
-      <main class="main" id="root"></main>
+        <div class="headerActions">
+          <button class="meta meta-ok" id="btnReset" type="button">Reiniciar</button>
+        </div>
+      </div>
 
-    </div>
+      <div class="headerMetaRow">
+        <div class="meta meta-soft" id="protocolText">PROTOCOLO: —</div>
+        <div class="meta meta-soft" id="dateText">DATA: —</div>
+        <div class="meta meta-warn" aria-label="Confidencial (não interativo)">CONFIDENCIAL</div>
+      </div>
+    </header>
 
-    <script src="./app.js"></script>
+    <main id="root"></main>
   </div>
+
+  <script src="./app.js"></script>
 </body>
 </html>
