@@ -1,8 +1,4 @@
-/* Zona de Controle
-   Celular único, sem chat, sem backend.
-*/
-
-const STORAGE_KEY = "zc_state_v4";
+const STORAGE_KEY = "zc_state_v6";
 
 const Roles = {
   COALIZAO: "COALIZAO",
@@ -18,6 +14,7 @@ const Cards = {
 const Phase = {
   HOME: "HOME",
   PLAYERS: "PLAYERS",
+  POWERS_GUIDE: "POWERS_GUIDE",
   DEAL: "DEAL",
   PASS: "PASS",
   ROLE: "ROLE",
@@ -26,12 +23,14 @@ const Phase = {
   ROUND_START: "ROUND_START",
   PICK_SUP: "PICK_SUP",
   DEBATE: "DEBATE",
+
   VOTE: "VOTE",
   VOTE_RESULT: "VOTE_RESULT",
 
   LEG_SUP: "LEG_SUP",
   LEG_DEL: "LEG_DEL",
-  POLICY_INFO: "POLICY_INFO",
+
+  CRISIS_STATE: "CRISIS_STATE",
 
   POWER_INFO: "POWER_INFO",
   POWER_AUDIT: "POWER_AUDIT",
@@ -44,6 +43,120 @@ const PendingPower = {
   AUDIT: "AUDIT",
   KILL: "KILL",
 };
+
+const EndPages = {
+  END_COALIZAO: {
+    title: "VITÓRIA — COALIZÃO",
+    status: "STATUS FINAL: PARALISIA NEGOCIADA",
+    lines: [
+      { text: "O poder não se concentrou." },
+      { text: "Também não avançou." },
+      { text: "Cada nomeação exigiu concessões." },
+      { text: "Cada acordo gerou vigilância." },
+      { text: "O consenso virou desgaste contínuo." },
+      { text: "Nenhuma autoridade se sustentou." },
+      { text: "Nenhuma ruptura foi permitida." },
+      { text: "A crise foi administrada, não resolvida." },
+      {
+        reactive: [{ when: { gte: ["vetos", 5] }, text: "O plural resistiu a {vetos} vetos sucessivos." }],
+        text: "O plural foi preservado.",
+      },
+      {
+        reactive: [{ when: { gte: ["rodadas", 8] }, text: "A eficiência se perdeu em {rodadas} ciclos de impasse." }],
+        text: "A eficiência foi sacrificada.",
+      },
+      {
+        reactive: [{ when: { gte: ["crises", 1] }, text: "O Estado operou sob crise recorrente." }],
+        text: "O Estado segue em disputa constante.",
+      },
+      { text: "O controle permanece suspenso." },
+    ],
+  },
+
+  END_ORDEM: {
+    title: "VITÓRIA — ORDEM",
+    status: "STATUS FINAL: ESTABILIDADE FORÇADA",
+    lines: [
+      { text: "O sistema voltou a operar." },
+      { text: "A confiança não retornou." },
+      { text: "As nomeações avançaram." },
+      {
+        reactive: [{ when: { gte: ["vetos", 3] }, text: "Após {vetos} vetos, o dissenso foi neutralizado." }],
+        text: "O dissenso foi tratado como falha.",
+      },
+      {
+        reactive: [{ when: { lte: ["rodadas", 4] }, text: "O debate foi encurtado para garantir fluidez." }],
+        text: "O debate virou atraso.",
+      },
+      {
+        reactive: [{ when: { gte: ["crises", 1] }, text: "A divergência foi associada à instabilidade." }],
+        text: "A divergência virou risco.",
+      },
+      { text: "A obediência virou critério." },
+      { text: "As instituições funcionam." },
+      { text: "Precisamente." },
+      { text: "Mecanicamente." },
+      {
+        reactive: [{ when: { gte: ["decretos", 1] }, text: "Nada saiu do procedimento." }],
+        text: "Nada saiu do lugar.",
+      },
+      { text: "Exceto as pessoas." },
+    ],
+  },
+
+  END_REGENTE: {
+    title: "VITÓRIA — REGENTE",
+    status: "STATUS FINAL: ORDEM IRREVERSÍVEL",
+    lines: [
+      { text: "A instabilidade foi encerrada." },
+      { text: "Não resolvida." },
+      { text: "Encerrada." },
+      {
+        reactive: [{ when: { gte: ["rodadas", 6] }, text: "O sistema se mostrou incapaz de decidir." }],
+        text: "O sistema falhou em decidir.",
+      },
+      {
+        reactive: [{ when: { gte: ["crises", 2] }, text: "Após {crises} crises, o Decreto foi inevitável." }],
+        text: "O Decreto assumiu.",
+      },
+      { text: "A exceção virou método." },
+      {
+        reactive: [{ when: { gte: ["decretos", 2] }, text: "A urgência passou a ser permanente." }],
+        text: "A urgência virou regra.",
+      },
+      { text: "Não há vetos." },
+      { text: "Não há retorno." },
+      {
+        reactive: [{ when: { lte: ["rodadas", 3] }, text: "A autoridade foi consolidada rapidamente." }],
+        text: "A autoridade é única.",
+      },
+      { text: "O Estado funciona sem ouvir." },
+      { text: "O controle é absoluto." },
+    ],
+  },
+};
+
+const CivilTitles = [
+  "REVISÃO DO TOQUE DE RECOLHER",
+  "ANISTIA LIMITADA DE ZONA",
+  "COMISSÃO DE TRANSPARÊNCIA",
+  "GARANTIA DE TRÂNSITO CIVIL",
+  "AUDIÊNCIA PÚBLICA CONTROLADA",
+  "PROTEÇÃO DE SERVIÇOS ESSENCIAIS",
+  "CORREDOR HUMANITÁRIO",
+  "REGISTRO DE ABUSOS",
+];
+
+const DominioTitles = [
+  "LEI DE VIGILÂNCIA AMPLIADA",
+  "DECRETO DE BUSCA E APREENSÃO",
+  "CENSURA OPERACIONAL",
+  "CADASTRO COMPULSÓRIO",
+  "TRIBUNAL DE EXCEÇÃO",
+  "OPERAÇÃO DE CONTAINMENT",
+  "SUSPENSÃO DE GARANTIAS",
+  "RESTRIÇÃO DE CIRCULAÇÃO",
+];
 
 function shuffle(arr){
   for (let i = arr.length - 1; i > 0; i--){
@@ -80,7 +193,7 @@ function newProtocol(){
 function roleCounts(n){
   if (n === 5) return { coalizao: 3, ordem: 1, regente: 1 };
   if (n === 6) return { coalizao: 4, ordem: 1, regente: 1 };
-  return { coalizao: 4, ordem: 2, regente: 1 }; // 7
+  return { coalizao: 4, ordem: 2, regente: 1 };
 }
 
 function buildDeck(){
@@ -97,7 +210,6 @@ function freshState(){
     protocol: newProtocol(),
 
     playersDraft: ["", "", "", "", ""],
-
     players: [],
     passIndex: 0,
 
@@ -109,8 +221,13 @@ function freshState(){
     acordos: 0,
     decretos: 0,
 
-    crise: 0, // 0..3 (3 dispara)
+    crise: 0,
+    totalVetos: 0,
+    totalCrises: 0,
+
     votes: {},
+    voteOrder: [],
+    voteCursor: 0,
 
     deck: buildDeck(),
     discard: [],
@@ -118,15 +235,25 @@ function freshState(){
     hand3: null,
     hand2: null,
     supSelectedIdx: [],
+    delChosenIdx: null,
 
-    pendingPower: null, // executa na próxima rodada
-    powerJustUnlocked: null, // para tela explicativa
+    revealProjects: false,
 
-    directNomination: false,
+    pendingPower: null,
+    powerJustUnlocked: null,
+    powerOwnerIndex: null,
+
+    directNominationActive: false,
+    directNominationNext: false,
 
     lastPolicy: null,
     lastOutcomeText: null,
 
+    lastVoteYes: 0,
+    lastVoteNo: 0,
+    lastVoteApproved: null,
+
+    endPageId: null,
     winner: null,
     winReason: null,
   };
@@ -186,111 +313,20 @@ function drawOne(){
   return S.deck.pop();
 }
 
-function drawN(n){
+function titleForCardType(type){
+  if (type === Cards.ACORDO) return CivilTitles[Math.floor(Math.random() * CivilTitles.length)];
+  return DominioTitles[Math.floor(Math.random() * DominioTitles.length)];
+}
+
+function drawPolicy(){
+  const type = drawOne();
+  return { type, title: titleForCardType(type) };
+}
+
+function drawPolicies(n){
   const out = [];
-  for (let i = 0; i < n; i++) out.push(drawOne());
+  for (let i = 0; i < n; i++) out.push(drawPolicy());
   return out;
-}
-
-function cardName(c){
-  return c === Cards.ACORDO ? "PROJETO CIVIL" : "PROJETO DE DOMÍNIO";
-}
-
-function enactPolicy(card, auto=false){
-  S.lastPolicy = card;
-
-  if (card === Cards.ACORDO) S.acordos += 1;
-  else S.decretos += 1;
-
-  if (S.decretos >= 4) S.directNomination = true;
-
-  if (S.acordos >= 5){
-    S.winner = "COALIZAO";
-    S.winReason = "Cinco Acordos aprovados.";
-    S.phase = Phase.GAME_OVER;
-    save();
-    return;
-  }
-
-  if (S.decretos >= 6){
-    S.winner = "ORDEM";
-    S.winReason = "Seis Decretos promulgados.";
-    S.phase = Phase.GAME_OVER;
-    save();
-    return;
-  }
-
-  if (auto){
-    S.lastOutcomeText = "Crise Administrativa aplicada. Decreto automático promulgado. O contador foi reiniciado.";
-  }else{
-    S.lastOutcomeText = "Registro atualizado. O controle prossegue.";
-  }
-
-  unlockPowerIfAny();
-  save();
-}
-
-function unlockPowerIfAny(){
-  S.powerJustUnlocked = null;
-
-  const n = S.players.length;
-  const d = S.decretos;
-
-  if (n < 7){
-    if (d === 3) S.powerJustUnlocked = PendingPower.AUDIT;
-  }else{
-    if (d === 2) S.powerJustUnlocked = PendingPower.AUDIT;
-    if (d === 3) S.powerJustUnlocked = PendingPower.KILL;
-  }
-
-  if (S.powerJustUnlocked){
-    S.pendingPower = S.powerJustUnlocked; // executa na próxima rodada
-    S.phase = Phase.POWER_INFO;
-  }else{
-    S.phase = Phase.POLICY_INFO;
-  }
-}
-
-function checkRegenteWinConditionAfterGovConfirm(){
-  if (S.decretos >= 3 && S.supervisorIndex != null){
-    const sup = S.players[S.supervisorIndex];
-    if (sup && sup.role === Roles.REGENTE){
-      S.winner = "ORDEM";
-      S.winReason = "O Regente foi confirmado Supervisor após o terceiro Decreto.";
-      S.phase = Phase.GAME_OVER;
-      save();
-      return true;
-    }
-  }
-  return false;
-}
-
-function resetVotes(){
-  S.votes = {};
-  S._voteCursor = 0;
-}
-
-function majorityApproved(){
-  const alive = alivePlayers();
-  let yes = 0, no = 0;
-  for (const p of alive){
-    const v = S.votes[p.id];
-    if (v === true) yes++;
-    if (v === false) no++;
-  }
-  return yes > no;
-}
-
-function applyCrisisAutoPolicy(){
-  const card = drawOne();
-  enactPolicy(card, true);
-  S.crise = 0;
-}
-
-function roleCountsText(){
-  const n = S.players.length;
-  const rc = roleCounts(n);
-  return `Coalizão: ${rc.coalizao} · Ordem: ${rc.ordem} · Regente: 1`;
 }
 
 function escape(s){
@@ -300,6 +336,12 @@ function escape(s){
     .replaceAll(">","&gt;")
     .replaceAll('"',"&quot;")
     .replaceAll("'","&#039;");
+}
+
+function roleCountsText(){
+  const n = S.players.length;
+  const rc = roleCounts(n);
+  return `Coalizão: ${rc.coalizao} · Ordem: ${rc.ordem} · Regente: 1`;
 }
 
 function kpiHTML(){
@@ -333,35 +375,238 @@ function kpiHTML(){
   `;
 }
 
-function view(){
-  if (S.phase === Phase.HOME){
-    return `
-      <section class="card">
-        <div class="home-title">ZONA DE CONTROLE</div>
+function decreeAuditThreshold(){
+  return (S.players.length >= 7) ? 2 : 3;
+}
 
-        <div class="formblock">
-          <div class="label">REGISTRO DE ABERTURA</div>
-          <div class="value">
-O Estado entrou em Regime de Emergência.
+function powersGuideText(){
+  const n = S.players.length;
+  const auditN = decreeAuditThreshold();
+
+  const registro =
+`A sessão foi validada.
+Os nomes foram inseridos.
+A distribuição dos papéis será silenciosa.
+
+Antes da passagem do dispositivo, fica registrado:
+a ORDEM não depende apenas de votos.
+Ela acumula instrumentos.
+Cada Decreto amplia o alcance do controle.`;
+
+  const audit =
+`AUDITORIA ADMINISTRATIVA
+Desbloqueio: ${auditN}º Decreto.
+Execução: imediatamente após a promulgação do Decreto.
+Apenas o Delegado Central acessa o resultado.
+A leitura retorna: COALIZÃO ou ORDEM.
+O Regente é registrado como ORDEM.`;
+
+  const kill =
+`INTERVENÇÃO DIRETA
+Desbloqueio: 3º Decreto.
+Execução: imediatamente após a promulgação.
+A decisão é exclusiva do Delegado Central.
+Um participante ativo é removido do processo.
+A lealdade não é revelada ao grupo.
+Se o Regente for removido, a Coalizão vence imediatamente.`;
+
+  const direct =
+`NOMEAÇÃO DIRETA
+Ativação: 4º Decreto.
+A indicação de Supervisor deixa de ser submetida a veto.
+Não há votação.
+O Governo assume.
+O processo legislativo prossegue.`;
+
+  const nota =
+`Quando uma função é desbloqueada,
+o sistema apresenta uma tela própria.
+
+O debate ocorre fora do registro.
+Aqui, apenas se confirma o que foi aplicado.`;
+
+  const decretos = (n < 7) ? `${audit}\n\n${direct}` : `${audit}\n\n${kill}\n\n${direct}`;
+
+  return { registro, decretos, nota };
+}
+
+function unlockPowerIfAnyAppliedToOwner(ownerIndex){
+  S.powerJustUnlocked = null;
+  S.powerOwnerIndex = null;
+
+  const n = S.players.length;
+  const d = S.decretos;
+
+  if (d >= 4 && !S.directNominationActive) S.directNominationNext = true;
+
+  if (n < 7){
+    if (d === 3) S.powerJustUnlocked = PendingPower.AUDIT;
+  }else{
+    if (d === 2) S.powerJustUnlocked = PendingPower.AUDIT;
+    if (d === 3) S.powerJustUnlocked = PendingPower.KILL;
+  }
+
+  if (S.powerJustUnlocked){
+    S.powerOwnerIndex = ownerIndex;
+    S.pendingPower = S.powerJustUnlocked;
+    S.phase = Phase.POWER_INFO;
+  }
+}
+
+function maybeActivateDirectNominationForCurrentCycle(){
+  if (S.directNominationNext){
+    S.directNominationActive = true;
+    S.directNominationNext = false;
+  }
+}
+
+function setGameOver(pageId){
+  S.endPageId = pageId;
+  S.phase = Phase.GAME_OVER;
+  save();
+}
+
+function checkImmediateWinAfterPolicy(){
+  if (S.acordos >= 5){
+    setGameOver("END_COALIZAO");
+    return true;
+  }
+  if (S.decretos >= 6){
+    setGameOver("END_ORDEM");
+    return true;
+  }
+  return false;
+}
+
+function checkRegenteWinConditionAfterGovConfirm(){
+  if (S.decretos >= 3 && S.supervisorIndex != null){
+    const sup = S.players[S.supervisorIndex];
+    if (sup && sup.role === Roles.REGENTE){
+      setGameOver("END_REGENTE");
+      return true;
+    }
+  }
+  return false;
+}
+
+function enactPolicy(policy, auto=false, powerOwnerIndex=null){
+  S.lastPolicy = policy?.type || null;
+
+  if (policy.type === Cards.ACORDO) S.acordos += 1;
+  else S.decretos += 1;
+
+  S.lastOutcomeText = auto
+    ? "Crise Administrativa aplicada. Uma carta entrou em vigor automaticamente. O contador foi reiniciado."
+    : "Registro atualizado. O controle prossegue.";
+
+  if (checkImmediateWinAfterPolicy()) return;
+
+  if (policy.type === Cards.DECRETO){
+    const owner = (powerOwnerIndex == null) ? S.delegadoIndex : powerOwnerIndex;
+    unlockPowerIfAnyAppliedToOwner(owner);
+  }
+
+  save();
+}
+
+function applyCrisisAutoPolicy(){
+  const policy = drawPolicy();
+  enactPolicy(policy, true, S.delegadoIndex);
+  S.crise = 0;
+  S.totalCrises += 1;
+  save();
+}
+
+function resetVotes(){
+  S.votes = {};
+  S.voteCursor = 0;
+  S.voteOrder = alivePlayers().map(p => p.id);
+}
+
+function voteCounts(){
+  let yes = 0, no = 0;
+  for (const id of S.voteOrder){
+    const v = S.votes[id];
+    if (v === true) yes++;
+    if (v === false) no++;
+  }
+  return { yes, no };
+}
+
+function currentVoter(){
+  const id = S.voteOrder[S.voteCursor];
+  if (!id) return null;
+  return alivePlayers().find(p => p.id === id) || null;
+}
+
+function startLegislative(){
+  S.hand3 = drawPolicies(3);
+  S.hand2 = null;
+  S.supSelectedIdx = [];
+  S.delChosenIdx = null;
+  S.revealProjects = false;
+  save();
+  setPhase(Phase.LEG_SUP);
+}
+
+function endContext(){
+  return {
+    vetos: S.totalVetos || 0,
+    decretos: S.decretos || 0,
+    rodadas: S.rodada || 0,
+    crises: S.totalCrises || 0,
+    vetos_consecutivos: S.crise || 0,
+  };
+}
+
+function resolveEndLines(page){
+  const ctx = endContext();
+
+  const interpolate = (t) => String(t).replaceAll(/\{(\w+)\}/g, (_, k) => String(ctx[k] ?? ""));
+  const check = (when) => {
+    if (when?.gte){
+      const [key, n] = when.gte;
+      return Number(ctx[key]) >= Number(n);
+    }
+    if (when?.lte){
+      const [key, n] = when.lte;
+      return Number(ctx[key]) <= Number(n);
+    }
+    return false;
+  };
+
+  const resolveLine = (line) => {
+    if (line.reactive){
+      for (const r of line.reactive){
+        if (check(r.when)) return interpolate(r.text);
+      }
+    }
+    return interpolate(line.text);
+  };
+
+  return page.lines.map(resolveLine);
+}
+
+const HOME_TEXT = {
+  title: "ZONA DE CONTROLE",
+  b1Label: "ZONA DE CONTROLE",
+  b1Body:
+`O Estado entrou em Regime de Emergência.
 As instituições permanecem em funcionamento.
 A confiança, não.
 
 Uma nova cadeia administrativa foi instaurada para garantir a continuidade da ordem.
-Nem todos os nomeados compartilham do mesmo objetivo.
-          </div>
-        </div>
-
-        <div class="formblock">
-          <div class="label">PROCEDIMENTO DE GOVERNO</div>
-          <div class="value">
-A cada ciclo, o Estado convoca a formação de um Governo Temporário.
+Nem todos os nomeados compartilham do mesmo objetivo.`,
+  b2Label: "PROCEDIMENTO DE GOVERNO",
+  b2Body:
+`A cada ciclo, o Estado convoca a formação de um Governo Temporário.
 
 O Delegado Central indica um Supervisor de Zona.
 A nomeação não é automática.
 
 O Governo só assume se houver aprovação coletiva.
 O debate é livre.
-Após aproximadamente 60 segundos, a votação deve ocorrer.
+A decisão é registrada.
 
 Aprovado: o Governo assume e o processo legislativo é iniciado.
 Vetado: a nomeação é anulada e o controle avança.
@@ -369,35 +614,56 @@ Vetado: a nomeação é anulada e o controle avança.
 Cada veto enfraquece a estabilidade institucional.
 
 Após três governos vetados, o sistema entra em Crise Administrativa.
-
-Nenhuma autoridade é confirmada.
-Nenhuma justificativa é aceita.
-
-Um Decreto é aplicado automaticamente,
-sem debate,
-sem escolha,
-sem contestação.
-
+Um Decreto é aplicado automaticamente.
 O controle prossegue.
-O contador é reiniciado.
-          </div>
-        </div>
-
-        <div class="formblock">
-          <div class="label">OBJETIVO NÃO DECLARADO</div>
-          <div class="value">
-Uma facção busca restaurar o equilíbrio institucional.
+O contador é reiniciado.`,
+  b3Label: "OBJETIVO NÃO DECLARADO",
+  b3Body:
+`Uma facção busca restaurar o equilíbrio institucional.
 Outra trabalha silenciosamente para consolidar o poder.
 
 O Regente deve ser protegido.
 Ou exposto.
 
 A sessão termina quando o controle é absoluto.
-Ou quando a última chance de correção se perde.
+Ou quando a última chance de correção se perde.`,
+  cta: "INICIAR SESSÃO",
+};
+
+function view(){
+  if (S.phase === Phase.HOME){
+    return `
+      <section class="card">
+        <div class="home-title">${escape(HOME_TEXT.title)}</div>
+
+        <div class="formblock">
+          <div class="home-label">
+            <div class="tag">${escape(HOME_TEXT.b1Label)}</div>
+            <div class="accent">REGISTRO DE ABERTURA</div>
           </div>
+          <div class="hr"></div>
+          <div class="value">${escape(HOME_TEXT.b1Body)}</div>
         </div>
 
-        <button class="btn primary" id="startSession">INICIAR SESSÃO</button>
+        <div class="formblock">
+          <div class="home-label">
+            <div class="tag">${escape(HOME_TEXT.b2Label)}</div>
+            <div class="accent">PROCEDIMENTO</div>
+          </div>
+          <div class="hr"></div>
+          <div class="value">${escape(HOME_TEXT.b2Body)}</div>
+        </div>
+
+        <div class="formblock">
+          <div class="home-label">
+            <div class="tag">${escape(HOME_TEXT.b3Label)}</div>
+            <div class="accent">DIRETRIZ</div>
+          </div>
+          <div class="hr"></div>
+          <div class="value">${escape(HOME_TEXT.b3Body)}</div>
+        </div>
+
+        <button class="btn primary" id="startSession">${escape(HOME_TEXT.cta)}</button>
       </section>
     `;
   }
@@ -414,7 +680,7 @@ Ou quando a última chance de correção se perde.
 
         <div class="formblock">
           <div class="label">COMPOSIÇÃO</div>
-          <div class="value">${roleCountsText()}</div>
+          <div class="value">${escape(roleCountsText())}</div>
         </div>
 
         <div class="row">${rows}</div>
@@ -427,6 +693,33 @@ Ou quando a última chance de correção se perde.
     `;
   }
 
+  if (S.phase === Phase.POWERS_GUIDE){
+    const t = powersGuideText();
+
+    return `
+      <section class="card">
+        <div class="h1">COMUNICADO DE CONTROLE</div>
+
+        <div class="formblock">
+          <div class="label">REGISTRO</div>
+          <div class="value">${escape(t.registro)}</div>
+        </div>
+
+        <div class="formblock">
+          <div class="label">DECRETOS E FUNÇÕES</div>
+          <div class="value">${escape(t.decretos)}</div>
+        </div>
+
+        <div class="formblock">
+          <div class="label">NOTA OPERACIONAL</div>
+          <div class="value">${escape(t.nota)}</div>
+        </div>
+
+        <button class="btn primary" id="continueAfterGuide">PROSSEGUIR</button>
+      </section>
+    `;
+  }
+
   if (S.phase === Phase.DEAL){
     return `
       <section class="card">
@@ -435,7 +728,7 @@ Ou quando a última chance de correção se perde.
 
         <div class="formblock">
           <div class="label">PARTICIPANTES</div>
-          <div class="value">${S.players.map(p => `• ${p.name}`).join("\n")}</div>
+          <div class="value">${escape(S.players.map(p => `• ${p.name}`).join("\n"))}</div>
         </div>
 
         <button class="btn primary" id="beginPass">INICIAR PASSAGEM</button>
@@ -480,7 +773,7 @@ Ou quando a última chance de correção se perde.
       ? `
         <div class="formblock">
           <div class="label">ALIADOS IDENTIFICADOS</div>
-          <div class="value">${allies.length ? allies.map(a => `• ${escape(a)}`).join("\n") : "• (nenhum registro adicional)"}</div>
+          <div class="value">${escape(allies.length ? allies.map(a => `• ${a}`).join("\n") : "• (nenhum registro adicional)")}</div>
         </div>
       `
       : "";
@@ -513,7 +806,6 @@ Ou quando a última chance de correção se perde.
 
   if (S.phase === Phase.BOARD){
     const del = S.players[S.delegadoIndex];
-
     const aliveList = alivePlayers().map(p => `• ${p.name}`).join("\n");
 
     return `
@@ -534,8 +826,8 @@ Ou quando a última chance de correção se perde.
 
         <div class="formblock">
           <div class="label">REGRA OPERACIONAL</div>
-          <div class="value">${S.directNomination
-            ? "Nomeação Direta ativa após o 4º Decreto.\nO Supervisor é indicado sem veto."
+          <div class="value">${S.directNominationActive
+            ? "Nomeação Direta ativa. O Supervisor é indicado sem veto."
             : "Supervisor indicado precisa de aprovação coletiva.\nDebate externo e voto no app."
           }</div>
         </div>
@@ -550,14 +842,11 @@ Ou quando a última chance de correção se perde.
     return `
       <section class="card">
         <div class="h1">INÍCIO DO CICLO</div>
-
         ${kpiHTML()}
-
         <div class="formblock">
           <div class="label">DELEGADO CENTRAL</div>
           <div class="value">${escape(del.name)}</div>
         </div>
-
         <button class="btn primary" id="pickSup">INDICAR SUPERVISOR</button>
       </section>
     `;
@@ -583,7 +872,6 @@ Ou quando a última chance de correção se perde.
         </div>
 
         <div class="row">${options}</div>
-
         <button class="btn" id="backBoard">VOLTAR</button>
       </section>
     `;
@@ -613,45 +901,69 @@ Ou quando a última chance de correção se perde.
   }
 
   if (S.phase === Phase.VOTE){
-    const alive = alivePlayers();
-    const current = alive[(S._voteCursor || 0) % alive.length];
+    const voter = currentVoter();
+    const voterName = voter ? voter.name : "—";
 
     return `
       <section class="card">
         <div class="h1">VOTAÇÃO</div>
 
-        <div class="formblock" id="voteOf">
-          <div class="label">VOTO DE</div>
-          <div class="value">${escape(current ? current.name : "—")}</div>
-        </div>
-
         <div class="formblock">
-          <div class="label">AÇÃO</div>
-          <div class="value">Apenas pressione um botão. A discussão ocorre fora do app.</div>
+          <div class="label">VOTO DE</div>
+          <div class="voteName">${escape(voterName)}</div>
+          <div class="small">Registre apenas um voto e passe o dispositivo.</div>
         </div>
 
         <div class="row">
-          <button class="btn primary" id="voteYes">APROVAR</button>
+          <button class="btn ok" id="voteYes">APROVAR</button>
           <button class="btn danger" id="voteNo">REJEITAR</button>
         </div>
 
-        <div class="small">Um único registro por vez. Passe o celular para cada participante registrar seu voto.</div>
-
-        <div class="row">
-          <button class="btn" id="nextVoter">PRÓXIMO VOTO</button>
-          <button class="btn" id="finishVote">ENCERRAR VOTAÇÃO</button>
-        </div>
+        <div class="small">O ciclo encerra automaticamente após todos votarem.</div>
       </section>
     `;
   }
 
   if (S.phase === Phase.VOTE_RESULT){
+    const yes = S.lastVoteYes ?? 0;
+    const no = S.lastVoteNo ?? 0;
+    const approved = !!S.lastVoteApproved;
+
+    const outcomeTitle = approved ? "APROVADO" : "VETADO";
+    const outcomeText = approved
+      ? "Aprovado. O Governo assume e o processo legislativo é iniciado."
+      : "Vetado. A nomeação foi anulada e o controle avança.";
+
     return `
       <section class="card">
         <div class="h1">RESULTADO</div>
-        <div class="p">${escape(S.lastOutcomeText || "Registro concluído.")}</div>
+
+        <div class="formblock">
+          <div class="label">CONTAGEM</div>
+          <div class="value">APROVAR: ${yes}\nREJEITAR: ${no}</div>
+        </div>
+
+        <div class="formblock">
+          <div class="label">${escape(outcomeTitle)}</div>
+          <div class="value">${escape(outcomeText)}</div>
+        </div>
 
         <button class="btn primary" id="continueAfterVote">PROSSEGUIR</button>
+      </section>
+    `;
+  }
+
+  if (S.phase === Phase.CRISIS_STATE){
+    return `
+      <section class="card">
+        <div class="h1">ESTADO DE CRISE</div>
+
+        <div class="formblock">
+          <div class="label">STATUS: CRISE ADMINISTRATIVA</div>
+          <div class="value">O sistema não conseguiu decidir.\nTrês vetos consecutivos comprometeram o processo.\nUma medida extraordinária será aplicada.\nUma carta entra em vigor automaticamente.</div>
+        </div>
+
+        <button class="btn danger" id="applyCrisis">APLICAR MEDIDA</button>
       </section>
     `;
   }
@@ -659,22 +971,39 @@ Ou quando a última chance de correção se perde.
   if (S.phase === Phase.LEG_SUP){
     const del = S.players[S.delegadoIndex];
     const sup = S.players[S.supervisorIndex];
-    const cards = S.hand3 || [];
 
-    const picks = cards.map((c, i) => {
+    const authBlock = `
+      <div class="formblock">
+        <div class="label">AUTORIDADES</div>
+        <div class="value">Delegado: ${escape(del.name)}\nSupervisor: ${escape(sup.name)}</div>
+      </div>
+    `;
+
+    if (!S.revealProjects){
+      return `
+        <section class="card">
+          <div class="h1">FASE LEGISLATIVA</div>
+          ${authBlock}
+          <div class="formblock">
+            <div class="label">AÇÃO DO SUPERVISOR</div>
+            <div class="value">Selecione 2 entre 3 projetos.\nO terceiro será descartado.</div>
+          </div>
+          <button class="btn primary" id="revealSupProjects">MOSTRAR PROJETOS</button>
+        </section>
+      `;
+    }
+
+    const cards = S.hand3 || [];
+    const picks = cards.map((p, i) => {
       const selected = S.supSelectedIdx.includes(i);
-      const cls = selected ? "policyPick ok" : "policyPick gray";
-      return `<div class="${cls}" data-pick="${i}">${cardName(c)}</div>`;
+      const cls = selected ? (p.type === Cards.ACORDO ? "policyPick ok" : "policyPick bad") : "policyPick gray";
+      return `<div class="${cls}" data-pick="${i}">${escape(p.title)}</div>`;
     }).join("");
 
     return `
       <section class="card">
         <div class="h1">FASE LEGISLATIVA</div>
-
-        <div class="formblock">
-          <div class="label">AUTORIDADES</div>
-          <div class="value">Delegado: ${escape(del.name)}\nSupervisor: ${escape(sup.name)}</div>
-        </div>
+        ${authBlock}
 
         <div class="formblock">
           <div class="label">AÇÃO DO SUPERVISOR</div>
@@ -691,53 +1020,60 @@ Ou quando a última chance de correção se perde.
   if (S.phase === Phase.LEG_DEL){
     const del = S.players[S.delegadoIndex];
     const sup = S.players[S.supervisorIndex];
-    const cards = S.hand2 || [];
 
-    const opts = cards.map((c, i) => {
-      return `<div class="policyPick gray" data-final="${i}">${cardName(c)}</div>`;
+    const authBlock = `
+      <div class="formblock">
+        <div class="label">AUTORIDADES</div>
+        <div class="value">Delegado: ${escape(del.name)}\nSupervisor: ${escape(sup.name)}</div>
+      </div>
+    `;
+
+    if (!S.revealProjects){
+      return `
+        <section class="card">
+          <div class="h1">DECISÃO DO DELEGADO</div>
+          ${authBlock}
+          <div class="formblock">
+            <div class="label">AÇÃO DO DELEGADO</div>
+            <div class="value">Escolha 1 entre 2 projetos.\nA cor só aparece quando selecionado.\nConfirme antes de promulgar.</div>
+          </div>
+          <button class="btn primary" id="revealDelProjects">MOSTRAR PROJETOS</button>
+        </section>
+      `;
+    }
+
+    const cards = S.hand2 || [];
+    const opts = cards.map((p, i) => {
+      const isChosen = S.delChosenIdx === i;
+      const cls = isChosen ? (p.type === Cards.ACORDO ? "policyPick ok" : "policyPick bad") : "policyPick gray";
+      return `<div class="${cls}" data-final="${i}">${escape(p.title)}</div>`;
     }).join("");
 
     return `
       <section class="card">
         <div class="h1">DECISÃO DO DELEGADO</div>
+        ${authBlock}
 
         <div class="formblock">
-          <div class="label">AUTORIDADES</div>
-          <div class="value">Delegado: ${escape(del.name)}\nSupervisor: ${escape(sup.name)}</div>
-        </div>
-
-        <div class="formblock">
-          <div class="label">AÇÃO DO DELEGADO</div>
+          <div class="label">SELEÇÃO</div>
           <div class="value">Escolha 1 entre 2 projetos.\nO outro será descartado.</div>
         </div>
 
         <div class="row">${opts}</div>
 
-        <div class="small">Antes da escolha final, ambos aparecem como cinza.</div>
+        <button class="btn primary" id="confirmDelegateChoice" ${S.delChosenIdx == null ? "disabled" : ""}>CONFIRMAR PROMULGAÇÃO</button>
       </section>
     `;
   }
 
   if (S.phase === Phase.POWER_INFO){
-    const subtitle = (S.powerJustUnlocked === PendingPower.AUDIT)
-      ? "AUDITORIA ADMINISTRATIVA AUTORIZADA"
-      : "INTERVENÇÃO DIRETA AUTORIZADA";
+    const isAudit = S.powerJustUnlocked === PendingPower.AUDIT;
+    const subtitle = isAudit ? "AUDITORIA ADMINISTRATIVA AUTORIZADA" : "INTERVENÇÃO DIRETA AUTORIZADA";
+    const owner = S.players[S.powerOwnerIndex]?.name || "—";
 
-    const body = (S.powerJustUnlocked === PendingPower.AUDIT)
-      ? `Com a promulgação deste Decreto, uma auditoria passa a existir.
-
-A auditoria será executada na próxima rodada.
-Apenas o Delegado Central verá o resultado.
-
-A leitura retorna: COALIZÃO ou ORDEM.
-O Regente aparece como ORDEM.`
-      : `Com a promulgação deste Decreto, uma intervenção passa a existir.
-
-A intervenção será executada na próxima rodada.
-O Delegado Central deverá eliminar um participante vivo.
-
-A lealdade não é revelada ao grupo.
-Se o Regente for eliminado, a Coalizão vence imediatamente.`;
+    const body = isAudit
+      ? `Uma auditoria passa a existir.\n\nA execução é imediata.\nApenas o Delegado Central vê o resultado.\n\nLeitura retorna: COALIZÃO ou ORDEM.\nO Regente aparece como ORDEM.`
+      : `Uma intervenção passa a existir.\n\nA execução é imediata.\nO Delegado Central elimina um participante vivo.\n\nA lealdade não é revelada ao grupo.\nSe o Regente for eliminado, a Coalizão vence imediatamente.`;
 
     return `
       <section class="card">
@@ -748,15 +1084,20 @@ Se o Regente for eliminado, a Coalizão vence imediatamente.`;
           <div class="value">${escape(body)}</div>
         </div>
 
+        <div class="formblock">
+          <div class="label">AUTORIDADE RESPONSÁVEL</div>
+          <div class="value">Delegado Central: ${escape(owner)}</div>
+        </div>
+
         <button class="btn primary" id="continuePowerInfo">PROSSEGUIR</button>
       </section>
     `;
   }
 
   if (S.phase === Phase.POWER_AUDIT){
-    const del = S.players[S.delegadoIndex];
+    const owner = S.players[S.powerOwnerIndex];
     const opts = alivePlayers()
-      .filter(p => p.index !== S.delegadoIndex)
+      .filter(p => p.index !== owner.index)
       .map(p => `<button class="btn" data-audit="${p.index}">${escape(p.name)}</button>`)
       .join("");
 
@@ -771,20 +1112,19 @@ Se o Regente for eliminado, a Coalizão vence imediatamente.`;
 
         <div class="formblock">
           <div class="label">DELEGADO CENTRAL</div>
-          <div class="value">${escape(del.name)}</div>
+          <div class="value">${escape(owner.name)}</div>
         </div>
 
         <div class="p">Escolha um participante para auditoria.</div>
-
         <div class="row">${opts}</div>
       </section>
     `;
   }
 
   if (S.phase === Phase.POWER_KILL){
-    const del = S.players[S.delegadoIndex];
+    const owner = S.players[S.powerOwnerIndex];
     const opts = alivePlayers()
-      .filter(p => p.index !== S.delegadoIndex)
+      .filter(p => p.index !== owner.index)
       .map(p => `<button class="btn danger" data-kill="${p.index}">${escape(p.name)}</button>`)
       .join("");
 
@@ -799,36 +1139,28 @@ Se o Regente for eliminado, a Coalizão vence imediatamente.`;
 
         <div class="formblock">
           <div class="label">DELEGADO CENTRAL</div>
-          <div class="value">${escape(del.name)}</div>
+          <div class="value">${escape(owner.name)}</div>
         </div>
 
         <div class="p">Escolha um participante para eliminação.</div>
-
         <div class="row">${opts}</div>
       </section>
     `;
   }
 
-  if (S.phase === Phase.POLICY_INFO){
-    return `
-      <section class="card">
-        <div class="h1">REGISTRO</div>
-        <div class="p">${escape(S.lastOutcomeText || "Registro atualizado.")}</div>
-
-        <button class="btn primary" id="continuePolicy">PROSSEGUIR</button>
-      </section>
-    `;
-  }
-
   if (S.phase === Phase.GAME_OVER){
-    const title = (S.winner === "COALIZAO") ? "VITÓRIA DA COALIZÃO" : "VITÓRIA DA ORDEM";
+    const id = S.endPageId || "END_ORDEM";
+    const page = EndPages[id] || EndPages.END_ORDEM;
+    const lines = resolveEndLines(page);
+    const out = lines.map(t => `• ${t}`).join("\n");
+
     return `
       <section class="card">
-        <div class="h1">${escape(title)}</div>
+        <div class="h1">${escape(page.title)}</div>
 
         <div class="formblock">
-          <div class="label">MOTIVO</div>
-          <div class="value">${escape(S.winReason || "Encerramento.")}</div>
+          <div class="label">${escape(page.status)}</div>
+          <div class="value">${escape(out)}</div>
         </div>
 
         ${kpiHTML()}
@@ -911,19 +1243,44 @@ function bind(){
       S.rodada = 1;
       S.acordos = 0;
       S.decretos = 0;
+
       S.crise = 0;
+      S.totalVetos = 0;
+      S.totalCrises = 0;
 
       S.deck = buildDeck();
       S.discard = [];
 
+      S.hand3 = null;
+      S.hand2 = null;
+      S.supSelectedIdx = [];
+      S.delChosenIdx = null;
+
       S.pendingPower = null;
       S.powerJustUnlocked = null;
-      S.directNomination = false;
+      S.powerOwnerIndex = null;
+
+      S.directNominationActive = false;
+      S.directNominationNext = false;
+
+      S.lastPolicy = null;
+      S.lastOutcomeText = null;
+
+      S.lastVoteYes = 0;
+      S.lastVoteNo = 0;
+      S.lastVoteApproved = null;
+
+      S.endPageId = null;
 
       save();
-      setPhase(Phase.DEAL);
+      setPhase(Phase.POWERS_GUIDE);
     };
 
+    return;
+  }
+
+  if (S.phase === Phase.POWERS_GUIDE){
+    document.getElementById("continueAfterGuide").onclick = () => setPhase(Phase.DEAL);
     return;
   }
 
@@ -938,9 +1295,7 @@ function bind(){
   }
 
   if (S.phase === Phase.ROLE){
-    document.getElementById("okRole").onclick = () => {
-      alert("Confirmado.");
-    };
+    document.getElementById("okRole").onclick = () => alert("Confirmado.");
 
     document.getElementById("passNext").onclick = () => {
       if (S.passIndex < S.players.length - 1){
@@ -951,7 +1306,6 @@ function bind(){
       }
       setPhase(Phase.BOARD);
     };
-
     return;
   }
 
@@ -962,14 +1316,7 @@ function bind(){
 
   if (S.phase === Phase.ROUND_START){
     document.getElementById("pickSup").onclick = () => {
-      if (S.pendingPower){
-        const p = S.pendingPower;
-        S.pendingPower = null;
-        save();
-        if (p === PendingPower.AUDIT) setPhase(Phase.POWER_AUDIT);
-        else setPhase(Phase.POWER_KILL);
-        return;
-      }
+      maybeActivateDirectNominationForCurrentCycle();
       setPhase(Phase.PICK_SUP);
     };
     return;
@@ -984,7 +1331,7 @@ function bind(){
         S.supervisorIndex = idx;
         save();
 
-        if (S.directNomination){
+        if (S.directNominationActive){
           if (checkRegenteWinConditionAfterGovConfirm()) return;
           startLegislative();
           return;
@@ -993,7 +1340,6 @@ function bind(){
         setPhase(Phase.DEBATE);
       };
     });
-
     return;
   }
 
@@ -1007,73 +1353,88 @@ function bind(){
   }
 
   if (S.phase === Phase.VOTE){
-    const alive = alivePlayers();
-    const current = alive[(S._voteCursor || 0) % alive.length];
+    const voter = currentVoter();
 
-    document.getElementById("voteYes").onclick = () => {
-      S.votes[current.id] = true;
+    const registerAndAdvance = (val) => {
+      if (!voter) return;
+      S.votes[voter.id] = val;
+      S.voteCursor += 1;
       save();
-      alert("APROVADO registrado.");
-    };
 
-    document.getElementById("voteNo").onclick = () => {
-      S.votes[current.id] = false;
-      save();
-      alert("REJEITADO registrado.");
-    };
+      if (S.voteCursor >= S.voteOrder.length){
+        const { yes, no } = voteCounts();
+        S.lastVoteYes = yes;
+        S.lastVoteNo = no;
+        S.lastVoteApproved = yes > no;
+        save();
+        setPhase(Phase.VOTE_RESULT);
+        return;
+      }
 
-    document.getElementById("nextVoter").onclick = () => {
-      S._voteCursor = (S._voteCursor || 0) + 1;
-      save();
       render();
     };
 
-    document.getElementById("finishVote").onclick = () => {
-      const approved = majorityApproved();
-
-      if (approved){
-        S.lastOutcomeText = "Aprovado. O Governo assume e o processo legislativo é iniciado.";
-        save();
-        setPhase(Phase.VOTE_RESULT);
-      }else{
-        S.crise += 1;
-        S.lastOutcomeText = "Vetado. A nomeação foi anulada e o controle avança.";
-
-        S.supervisorPrevIndex = S.supervisorIndex;
-        S.supervisorIndex = null;
-
-        S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
-        S.rodada += 1;
-
-        if (S.crise >= 3){
-          applyCrisisAutoPolicy();
-          S.lastOutcomeText = "Crise Administrativa. Um Decreto foi aplicado automaticamente. O contador foi reiniciado.";
-
-          S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
-          S.rodada += 1;
-        }
-
-        save();
-        setPhase(Phase.VOTE_RESULT);
-      }
-    };
-
+    document.getElementById("voteYes").onclick = () => registerAndAdvance(true);
+    document.getElementById("voteNo").onclick = () => registerAndAdvance(false);
     return;
   }
 
   if (S.phase === Phase.VOTE_RESULT){
     document.getElementById("continueAfterVote").onclick = () => {
-      if ((S.lastOutcomeText || "").startsWith("Aprovado")){
+      if (S.lastVoteApproved){
         if (checkRegenteWinConditionAfterGovConfirm()) return;
         startLegislative();
         return;
       }
+
+      S.totalVetos += 1;
+      S.crise += 1;
+
+      S.supervisorPrevIndex = S.supervisorIndex;
+      S.supervisorIndex = null;
+
+      S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
+      S.rodada += 1;
+
+      save();
+
+      if (S.crise >= 3){
+        setPhase(Phase.CRISIS_STATE);
+        return;
+      }
+
+      setPhase(Phase.BOARD);
+    };
+    return;
+  }
+
+  if (S.phase === Phase.CRISIS_STATE){
+    document.getElementById("applyCrisis").onclick = () => {
+      applyCrisisAutoPolicy();
+
+      if (S.phase === Phase.GAME_OVER) return;
+
+      if (S.pendingPower){
+        setPhase(Phase.POWER_INFO);
+        return;
+      }
+
       setPhase(Phase.BOARD);
     };
     return;
   }
 
   if (S.phase === Phase.LEG_SUP){
+    const revealBtn = document.getElementById("revealSupProjects");
+    if (revealBtn){
+      revealBtn.onclick = () => {
+        S.revealProjects = true;
+        save();
+        render();
+      };
+      return;
+    }
+
     root.querySelectorAll("[data-pick]").forEach(el => {
       el.onclick = () => {
         const i = Number(el.getAttribute("data-pick"));
@@ -1093,53 +1454,77 @@ function bind(){
       const cards = S.hand3.slice();
       const keep = S.supSelectedIdx.map(i => cards[i]);
       const discard = cards.filter((_, i) => !S.supSelectedIdx.includes(i));
-      S.discard.push(...discard);
+      S.discard.push(...discard.map(p => p.type));
 
       S.hand2 = keep;
       S.hand3 = null;
       S.supSelectedIdx = [];
+      S.delChosenIdx = null;
+      S.revealProjects = false;
+
       save();
       setPhase(Phase.LEG_DEL);
     };
-
     return;
   }
 
   if (S.phase === Phase.LEG_DEL){
+    const revealBtn = document.getElementById("revealDelProjects");
+    if (revealBtn){
+      revealBtn.onclick = () => {
+        S.revealProjects = true;
+        save();
+        render();
+      };
+      return;
+    }
+
     root.querySelectorAll("[data-final]").forEach(el => {
       el.onclick = () => {
         const i = Number(el.getAttribute("data-final"));
-        const chosen = S.hand2[i];
-        const other = S.hand2[1 - i];
-
-        const chosenEl = root.querySelector(`[data-final="${i}"]`);
-        const otherEl = root.querySelector(`[data-final="${1 - i}"]`);
-        if (chosenEl) chosenEl.className = `policyPick ${chosen === Cards.ACORDO ? "ok" : "bad"}`;
-        if (otherEl) otherEl.className = `policyPick ${other === Cards.ACORDO ? "ok" : "bad"}`;
-
-        S.discard.push(other);
-
-        enactPolicy(chosen, false);
-
-        S.supervisorPrevIndex = S.supervisorIndex;
-        S.supervisorIndex = null;
-
-        S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
-        S.rodada += 1;
-
+        S.delChosenIdx = i;
         save();
         render();
       };
     });
 
+    document.getElementById("confirmDelegateChoice").onclick = () => {
+      if (S.delChosenIdx == null) return;
+
+      const chosen = S.hand2[S.delChosenIdx];
+      const other = S.hand2[1 - S.delChosenIdx];
+
+      S.discard.push(other.type);
+
+      enactPolicy(chosen, false, S.delegadoIndex);
+      if (S.phase === Phase.GAME_OVER) return;
+
+      S.supervisorPrevIndex = S.supervisorIndex;
+      S.supervisorIndex = null;
+
+      S.delegadoIndex = nextAliveIndex(S.delegadoIndex);
+      S.rodada += 1;
+
+      save();
+
+      if (S.pendingPower){
+        setPhase(Phase.POWER_INFO);
+        return;
+      }
+
+      setPhase(Phase.BOARD);
+    };
     return;
   }
 
   if (S.phase === Phase.POWER_INFO){
     document.getElementById("continuePowerInfo").onclick = () => {
-      S.powerJustUnlocked = null;
+      S.powerJustUnlocked = S.pendingPower;
       save();
-      setPhase(Phase.BOARD);
+
+      const p = S.pendingPower;
+      if (p === PendingPower.AUDIT) setPhase(Phase.POWER_AUDIT);
+      else setPhase(Phase.POWER_KILL);
     };
     return;
   }
@@ -1151,8 +1536,12 @@ function bind(){
         const target = S.players[idx];
         const seen = (target.role === Roles.REGENTE) ? "ORDEM" : (target.role === Roles.ORDEM ? "ORDEM" : "COALIZÃO");
         alert(`AUDITORIA: ${target.name}\nLEALDADE: ${seen}`);
-        S.lastOutcomeText = "Auditoria concluída. O registro permanece restrito ao Delegado.";
+
+        S.pendingPower = null;
+        S.powerJustUnlocked = null;
+        S.powerOwnerIndex = null;
         save();
+
         setPhase(Phase.BOARD);
       };
     });
@@ -1166,15 +1555,15 @@ function bind(){
         const target = S.players[idx];
         target.alive = false;
 
+        S.pendingPower = null;
+        S.powerJustUnlocked = null;
+        S.powerOwnerIndex = null;
+
         if (target.role === Roles.REGENTE){
-          S.winner = "COALIZAO";
-          S.winReason = "O Regente foi neutralizado durante uma intervenção.";
-          save();
-          setPhase(Phase.GAME_OVER);
+          setGameOver("END_COALIZAO");
           return;
         }
 
-        S.lastOutcomeText = "Intervenção concluída. A lealdade do eliminado não foi revelada.";
         save();
         setPhase(Phase.BOARD);
       };
@@ -1182,25 +1571,10 @@ function bind(){
     return;
   }
 
-  if (S.phase === Phase.POLICY_INFO){
-    document.getElementById("continuePolicy").onclick = () => {
-      setPhase(Phase.BOARD);
-    };
-    return;
-  }
-
   if (S.phase === Phase.GAME_OVER){
     document.getElementById("goHome").onclick = () => setPhase(Phase.HOME);
     return;
   }
-}
-
-function startLegislative(){
-  S.hand3 = drawN(3);
-  S.hand2 = null;
-  S.supSelectedIdx = [];
-  save();
-  setPhase(Phase.LEG_SUP);
 }
 
 function render(){
